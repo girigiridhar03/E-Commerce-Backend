@@ -9,20 +9,25 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const uploadToCloudinary = async (localFilePath) => {
+export const uploadToCloudinary = async (
+  localFilePath,
+  folderPath = "products"
+) => {
   if (!localFilePath) return null;
   try {
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
-      folder: "e-commerce",
+      folder: `e-commerce/${folderPath}`,
     });
-    fs.promises
-      .unlink(localFilePath)
-      .catch((error) => console.log("Upload file failed: ", error));
+    if (fs.existsSync(localFilePath)) {
+      await fs.promises.unlink(localFilePath);
+    }
 
     return response;
   } catch (error) {
-    fs.promises.unlink(localFilePath).catch(error);
+    if (fs.existsSync(localFilePath)) {
+      await fs.promises.unlink(localFilePath).catch(() => {});
+    }
     console.log("upload to cloudinary failed", error);
     return null;
   }

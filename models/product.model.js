@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
+import { generateDynamicSKU } from "../utils/generateDynamicSKU.js";
 
 const variantSchema = new mongoose.Schema(
   {
@@ -14,6 +15,7 @@ const variantSchema = new mongoose.Schema(
     currentPrice: { type: Number },
 
     stock: { type: Number, required: true, min: 0 },
+    color: { type: String, required: true },
 
     images: [
       {
@@ -30,14 +32,13 @@ const variantSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-variantSchema.pre("save", function (next) {
+variantSchema.pre("save", async function () {
   if (this.discountPercent > 0) {
     this.currentPrice =
       this.originalPrice - (this.originalPrice * this.discountPercent) / 100;
   } else {
     this.currentPrice = this.originalPrice;
   }
-  next();
 });
 
 const productSchema = new mongoose.Schema(
@@ -54,7 +55,7 @@ const productSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
-
+    brand: { type: String, required: true },
     slug: {
       type: String,
       unique: true,
@@ -99,22 +100,19 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-variantSchema.pre("save", function (next) {
+variantSchema.pre("save", async function () {
   if (!this.sku) {
     this.sku = generateDynamicSKU(this.parent().productName, this.attributes);
   }
-
-  next();
 });
 productSchema.index({ productCreatedBy: 1 });
-productSchema.pre("save", function (next) {
+productSchema.pre("save", async function () {
   if (this.isModified("productName")) {
     this.slug = slugify(this.productName, {
       lower: true,
       strict: true,
     });
   }
-  next();
 });
 
 const Product = mongoose.model("Product", productSchema);
