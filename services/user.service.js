@@ -53,6 +53,7 @@ export const signupService = async (req) => {
     return {
       status: 200,
       message: `A new verification email has been sent to ${existingUser.email}`,
+      user: existingUser,
     };
   }
 
@@ -88,6 +89,7 @@ export const signupService = async (req) => {
   return {
     status: 200,
     message: `Verification email sent to ${newUser.email}`,
+    user: newUser,
   };
 };
 
@@ -118,5 +120,38 @@ export const verifyEmailService = async (req) => {
   return {
     status: 200,
     message: "Email verified successfully",
+  };
+};
+
+export const loginService = async (req) => {
+  console.log(req.body, req);
+  const { email, password } = req?.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new AppError("Invalid Credentials", 401);
+  }
+
+  if (!user.isEmailVerified) {
+    throw new AppError("Please verify your email before logging in", 400);
+  }
+
+  if (user.isDeleted) {
+    throw new AppError("Invalid email or password", 401);
+  }
+
+  const isPassword = await user.matchPassword(password);
+
+  if (!isPassword) {
+    throw new AppError("Invalid Credentials", 401);
+  }
+
+  const token = await user.generateToken();
+
+  return {
+    status: 200,
+    message: "User logged in successfully",
+    token,
   };
 };

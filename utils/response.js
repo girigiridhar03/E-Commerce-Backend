@@ -7,7 +7,7 @@ export function response(res, statusCode, message, data = null) {
     success: statusCode < 400,
     statusCode,
     message,
-    ...(data ? data : {}),
+    ...(data ? { data } : {}),
   };
 
   return res.status(statusCode).json(responseObj);

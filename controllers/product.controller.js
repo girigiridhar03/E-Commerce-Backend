@@ -7,3 +7,4 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   response(res, result.status, result.message, result.data);
 });
+
