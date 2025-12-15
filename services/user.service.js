@@ -4,6 +4,7 @@ import { AppError } from "../utils/AppError.js";
 import { generateEmailVerification } from "../utils/generateUniqueCodes.js";
 import { sendMail } from "../utils/mailer.js";
 
+///// Auth Services /////
 export const signupService = async (req) => {
   const { email, username, password, role, phoneNumber } = req.body;
 
@@ -153,5 +154,190 @@ export const loginService = async (req) => {
     status: 200,
     message: "User logged in successfully",
     token,
+  };
+};
+
+///// Analytics Dashboard Services /////
+export const getUserStatsService = async () => {
+  const userStats = await User.aggregate([
+    {
+      $facet: {
+        totalUsers: [{ $match: { role: "user" } }, { $count: "count" }],
+        totalVendors: [{ $match: { role: "vendor" } }, { $count: "count" }],
+        totalDeliveryMen: [
+          { $match: { role: "delivery-man" } },
+          { $count: "count" },
+        ],
+        emailVerifiedUsers: [
+          { $match: { isEmailVerified: true } },
+          { $count: "count" },
+        ],
+      },
+    },
+    {
+      $project: {
+        totalUsers: {
+          $ifNull: [{ $arrayElemAt: ["$totalUsers.count", 0] }, 0],
+        },
+        totalVendors: {
+          $ifNull: [{ $arrayElemAt: ["$totalVendors.count", 0] }, 0],
+        },
+        totalDeliveryMen: {
+          $ifNull: [{ $arrayElemAt: ["$totalDeliveryMen.count", 0] }, 0],
+        },
+        emailVerifiedUsers: {
+          $ifNull: [{ $arrayElemAt: ["$emailVerifiedUsers.count", 0] }, 0],
+        },
+      },
+    },
+  ]);
+
+  return {
+    status: 200,
+    message: "User Stats fetched successfully",
+    userStats: userStats?.[0],
+  };
+};
+
+export const getSignUpTrendsService = async (req) => {
+  const { range, startDate, endDate } = req.query;
+  const now = new Date();
+
+  let from = startDate ? new Date(startDate) : null;
+  let to = endDate ? new Date(endDate) : null;
+
+  if (!from) {
+    const days = Number(range) || 30;
+    from = new Date();
+    from.setDate(now.getDate() - days);
+  }
+
+  if (!to) {
+    to = new Date();
+    to.setHours(23, 59, 59, 999);
+  }
+
+  const signUpTrends = await User.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: from,
+          $lte: to,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+          day: { $dayOfMonth: "$createdAt" },
+        },
+        signups: { $sum: 1 },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        date: {
+          $dateFromParts: {
+            year: "$_id.year",
+            month: "$_id.month",
+            day: "$_id.day",
+          },
+        },
+        signups: 1,
+      },
+    },
+    { $sort: { date: 1 } },
+  ]);
+
+  return {
+    status: 200,
+    message: "SignUp Trends fetched successfully",
+    trends: signUpTrends,
+  };
+};
+
+export const getUserRoleDistributionService = async () => {
+  const roleCount = await User.aggregate([
+    {
+      $group: {
+        _id: "$role",
+        count: {
+          $sum: 1,
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        role: "$_id",
+        count: 1,
+      },
+    },
+    {
+      $sort: {
+        count: -1,
+      },
+    },
+  ]);
+
+  return {
+    status: 200,
+    message: "User role distribution count fetched successfully.",
+    roleCount,
+  };
+};
+
+export const getNewUsersService = async () => {
+  const now = new Date();
+
+  let from = new Date();
+  from.setDate(now.getDate() - 7);
+
+  let to = new Date();
+  to.setHours(23, 59, 59, 999);
+
+  const latestUsers = await User.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: from,
+          $lte: to,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+          day: { $dayOfMonth: "$createdAt" },
+        },
+        newSignUps: {
+          $sum: 1,
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        date: {
+          $dateFromParts: {
+            year: "$_id.year",
+            month: "$_id.month",
+            day: "$_id.day",
+          },
+        },
+        newSignUps: 1,
+      },
+    },
+  ]);
+
+  return {
+    status: 200,
+    message: "Lates Users fetched successfully.",
+    latestUsers,
   };
 };
