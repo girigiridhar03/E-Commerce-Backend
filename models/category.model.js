@@ -7,6 +7,7 @@ const categorySchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      unique: true,
     },
     slug: {
       type: String,
@@ -22,14 +23,12 @@ const categorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-categorySchema.pre("save", function (next) {
-  if (!this.isModified("name")) return next();
+categorySchema.pre("save", async function () {
+  if (!this.isModified("name")) return;
   this.slug = slugify(this.name, {
     lower: true,
     strict: true,
   });
-
-  next();
 });
 
 const Category = mongoose.model("Category", categorySchema);

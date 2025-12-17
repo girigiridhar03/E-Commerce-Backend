@@ -16,10 +16,12 @@ app.use(express.static(path.join(__dirname, "public")));
 // Files of Routers
 import userRouter from "./routes/user.routes.js";
 import productRouter from "./routes/product.routes.js";
+import category from "./routes/category.routes.js";
 
 // Routes
 app.use("/api", userRouter);
-app.use("/api", productRouter);
+app.use("/api/product", productRouter);
+app.use("/api/category", category);
 
 // ErrorHandler
 import { errorHandler } from "./utils/handlers.js";

@@ -6,6 +6,7 @@ import {
   signupService,
   verifyEmailService,
   getNewUsersService,
+  singleUserDetailsService,
 } from "../services/user.service.js";
 import { asyncHandler } from "../utils/handlers.js";
 import { response } from "../utils/response.js";
@@ -27,10 +28,7 @@ export const login = asyncHandler(async (req, res) => {
   response(res, status, message, token);
 });
 
-
-
 ///// Analytics Dashboard /////
-
 // Cards
 export const getUserStats = asyncHandler(async (_, res) => {
   const { status, message, userStats } = await getUserStatsService();
@@ -55,4 +53,10 @@ export const getUserRoleDistribution = asyncHandler(async (_, res) => {
 export const getNewUsers = asyncHandler(async (_, res) => {
   const { status, message, latestUsers } = await getNewUsersService();
   return response(res, status, message, latestUsers);
+});
+
+///// Dynamic Controllers /////
+export const singleUserDetails = asyncHandler(async (req, res) => {
+  const { status, message, details } = await singleUserDetailsService(req);
+  response(res, status, message, details);
 });

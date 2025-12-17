@@ -1,6 +1,9 @@
 import express from "express";
 import { upload } from "../middleware/multer.middleware.js";
-import { createProduct } from "../controllers/product.controller.js";
+import {
+  createProduct,
+  singleProductDetails,
+} from "../controllers/product.controller.js";
 import {
   authMiddleware,
   authorizeRole,
@@ -9,11 +12,17 @@ import {
 const productRouter = express.Router();
 
 productRouter.post(
-  "/product/create-product",
+  "/create-product",
   authMiddleware,
   authorizeRole("vendor", "admin"),
   upload.array("images", 5),
   createProduct
+);
+
+productRouter.get(
+  "/single-product/:productId/:variantId",
+  authMiddleware,
+  singleProductDetails
 );
 
 export default productRouter;

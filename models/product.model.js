@@ -9,7 +9,10 @@ const variantSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
-
+    description: {
+      type: String,
+      required: true,
+    },
     originalPrice: { type: Number, required: true },
     discountPercent: { type: Number, default: 0 },
     currentPrice: { type: Number },
@@ -61,12 +64,6 @@ const productSchema = new mongoose.Schema(
       unique: true,
       index: true,
     },
-
-    description: {
-      type: String,
-      required: true,
-    },
-
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",

@@ -1,4 +1,6 @@
 import { uploadToCloudinary } from "../config/cloudinary.js";
+import Cart from "../models/cart.model.js";
+import Order from "../models/order.model.js";
 import User from "../models/user.model.js";
 import { AppError } from "../utils/AppError.js";
 import { generateEmailVerification } from "../utils/generateUniqueCodes.js";
@@ -339,5 +341,33 @@ export const getNewUsersService = async () => {
     status: 200,
     message: "Lates Users fetched successfully.",
     latestUsers,
+  };
+};
+
+///// Dynamic Services /////
+export const singleUserDetailsService = async (req) => {
+  const loggedInUser = req.user;
+  const targetUserId = req.params.id;
+  const userDetails = await User.findById(targetUserId).select("-password");
+
+  if (loggedInUser.role === "admin" || loggedInUser.role === "vendor") {
+    const cartDetails = await Cart.find({ user: targetUserId });
+    const orderDetails = await Order.find({ user: targetUserId });
+
+    return {
+      status: 200,
+      messsage: `${userDetails.username} full details fetched successfully.`,
+      details: { userDetails, cartDetails, orderDetails },
+    };
+  }
+
+  if (loggedInUser.id !== targetUserId) {
+    throw new AppError("Access denied", 403);
+  }
+
+  return {
+    status: 200,
+    messsage: `${userDetails.username} details fetched successfully.`,
+    details: userDetails,
   };
 };
