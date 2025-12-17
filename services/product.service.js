@@ -152,10 +152,39 @@ export const singleProductDetailsService = async (req) => {
       },
     },
     {
+      $lookup: {
+        from: "categories",
+        let: { categoryId: "$category" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$_id", "$$categoryId"] },
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              slug: 1,
+            },
+          },
+        ],
+        as: "categoryDetails",
+      },
+    },
+    {
+      $unwind: {
+        path: "$categoryDetails",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
+    {
       $project: {
         variants: 0,
         isActive: 0,
         isDeleted: 0,
+        category: 0,
       },
     },
   ]);
@@ -164,5 +193,110 @@ export const singleProductDetailsService = async (req) => {
     status: 200,
     message: "Single Product details fetched successfully",
     details: productDetails,
+  };
+};
+
+export const getAllProductsService = async (req) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+  const search = req.query.search;
+  const match = {
+    isActive: true,
+    isDeleted: false,
+  };
+  if (search) {
+    match.$text = { $search: search };
+  }
+  if (req.query.category && mongoose.isValidObjectId(req.query.category)) {
+    match.category = req.query.category;
+  }
+  const aggregationPipeline = [
+    {
+      $match: match,
+    },
+    {
+      $lookup: {
+        from: "categories",
+        let: { categoryId: "$category" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$_id", "$$categoryId"] },
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              slug: 1,
+            },
+          },
+        ],
+        as: "categoryDetails",
+      },
+    },
+    {
+      $unwind: "$categoryDetails",
+    },
+    {
+      $unwind: "$variants",
+    },
+    {
+      $match: {
+        "variants.stock": { $gt: 0 },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        productName: 1,
+        brand: 1,
+        slug: 1,
+        description: 1,
+        rating: 1,
+        tags: 1,
+        numReviews: 1,
+        categoryDetails: 1,
+        variantId: "$variants._id",
+        sku: "$variants.sku",
+        originalPrice: "$variants.originalPrice",
+        discountPercent: "$variants.discountPercent",
+        currentPrice: "$variants.currentPrice",
+        stock: "$variants.stock",
+        color: "$variants.color",
+        images: "$variants.images",
+        attributes: "$variants.attributes",
+      },
+    },
+    {
+      $skip: skip,
+    },
+    {
+      $limit: limit,
+    },
+  ];
+
+  const products = await Product.aggregate(aggregationPipeline);
+  const totalCountAgg = await Product.aggregate([
+    {
+      $match: match,
+    },
+    { $unwind: "$variants" },
+    { $match: { "variants.stock": { $gt: 0 } } },
+    { $count: "total" },
+  ]);
+
+  const totalProducts = totalCountAgg?.[0].total || 0;
+  const totalPages = Math.ceil(totalProducts / limit);
+
+  return {
+    status: 200,
+    message: `Fetched products`,
+    products,
+    totalProducts,
+    totalPages,
+    page,
+    limit,
   };
 };

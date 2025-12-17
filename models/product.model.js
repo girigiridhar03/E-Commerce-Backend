@@ -56,7 +56,6 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      index: true,
     },
     brand: { type: String, required: true },
     slug: {
@@ -103,6 +102,24 @@ variantSchema.pre("save", async function () {
   }
 });
 productSchema.index({ productCreatedBy: 1 });
+productSchema.index(
+  {
+    productName: "text",
+    slug: "text",
+    brand: "text",
+    tags: "text",
+  },
+  {
+    weights: {
+      productName: 10,
+      slug: 6,
+      brand: 5,
+      tags: 4,
+    },
+    name: "ProductSearchIndex",
+  }
+);
+
 productSchema.pre("save", async function () {
   if (this.isModified("productName")) {
     this.slug = slugify(this.productName, {
