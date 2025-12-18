@@ -17,11 +17,13 @@ app.use(express.static(path.join(__dirname, "public")));
 import userRouter from "./routes/user.routes.js";
 import productRouter from "./routes/product.routes.js";
 import category from "./routes/category.routes.js";
+import cartRouter from "./routes/cart.routes.js";
 
 // Routes
 app.use("/api", userRouter);
 app.use("/api/product", productRouter);
 app.use("/api/category", category);
+app.use("/api/cart", cartRouter);
 
 // ErrorHandler
 import { errorHandler } from "./utils/handlers.js";
