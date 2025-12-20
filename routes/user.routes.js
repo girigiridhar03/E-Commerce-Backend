@@ -25,20 +25,31 @@ userRouter.post("/login", login);
 ///// Analytics Dashboard Routes /////
 userRouter.get(
   "/user/analytics/user-stats",
-  //   authMiddleware,
-  //   authorizeRole("admin"),
+  authMiddleware,
+  authorizeRole("admin"),
   getUserStats
 );
 
-userRouter.get("/user/analytics/signup-trends", getSignUpTrends);
-userRouter.get("/user/analytics/role-count", getUserRoleDistribution);
-userRouter.get("/user/analytics/new-users", getNewUsers);
+userRouter.get(
+  "/user/analytics/signup-trends",
+  authMiddleware,
+  authorizeRole("admin"),
+  getSignUpTrends
+);
+userRouter.get(
+  "/user/analytics/role-count",
+  authMiddleware,
+  authorizeRole("admin"),
+  getUserRoleDistribution
+);
+userRouter.get(
+  "/user/analytics/new-users",
+  authMiddleware,
+  authorizeRole("admin"),
+  getNewUsers
+);
 
 ///// Dynamic Routes /////
-userRouter.get(
-  "/user/:id",
-  authMiddleware,
-  singleUserDetails
-);
+userRouter.get("/user/:id", authMiddleware, singleUserDetails);
 
 export default userRouter;

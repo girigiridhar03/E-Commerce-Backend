@@ -2,6 +2,9 @@ import Category from "../models/category.model.js";
 import { AppError } from "../utils/AppError.js";
 
 export const addCategoryService = async (req) => {
+  if (!req.body) {
+    throw new AppError("body is empty", 400);
+  }
   const { name } = req.body;
 
   if (!name) {

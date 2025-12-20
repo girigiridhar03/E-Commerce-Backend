@@ -8,6 +8,9 @@ import { sendMail } from "../utils/mailer.js";
 
 ///// Auth Services /////
 export const signupService = async (req) => {
+  if (!req.body) {
+    throw new AppError("body is empty", 400);
+  }
   const { email, username, password, role, phoneNumber } = req.body;
 
   const requiredFields = ["email", "username", "password"];
@@ -127,7 +130,9 @@ export const verifyEmailService = async (req) => {
 };
 
 export const loginService = async (req) => {
-  console.log(req.body, req);
+  if (!req.body) {
+    throw new AppError("body is empty", 400);
+  }
   const { email, password } = req?.body;
 
   const user = await User.findOne({ email });

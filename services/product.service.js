@@ -5,6 +5,9 @@ import { AppError } from "../utils/AppError.js";
 
 export const createProductService = async (req) => {
   try {
+    if (!req.body) {
+      throw new AppError("body is empty", 400);
+    }
     let { productID, productName, description, category, brand } = req.body;
 
     const user = req.user;
