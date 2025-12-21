@@ -188,6 +188,7 @@ export const singleProductDetailsService = async (req) => {
         isActive: 0,
         isDeleted: 0,
         category: 0,
+        productCreatedBy: 0,
       },
     },
   ]);

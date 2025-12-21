@@ -1,28 +1,19 @@
 import mongoose from "mongoose";
 
-const orderSchema = new mongoose.Schema(
+const orderItemSchema = new mongoose.Schema(
   {
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
     productCreatedBy: {
       type: mongoose.Schema.ObjectId,
       ref: "User",
       required: true,
     },
-    product: {
-      type: mongoose.Schema.ObjectId,
-      ref: "Product",
-      required: true,
-    },
-    variantId: {
-      type: mongoose.Schema.ObjectId,
-      required: true,
-    },
-    user: {
-      type: mongoose.Schema.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    deliveryAddress: {
-      type: String,
+    variant: {
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
     quantity: {
@@ -30,14 +21,70 @@ const orderSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
-    status: {
-      type: String,
-      enum: ["pending", "order-placed", "out-of-delivery", "delivered"],
-      default: "pending",
+    priceAtPurchase: {
+      type: Number,
+      required: true,
     },
-    orderAssigned: {
-      type: mongoose.Schema.ObjectId,
+    itemTotal: {
+      type: Number,
+      required: true,
+    },
+  },
+  { _id: false, __v: false }
+);
+
+const orderSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
+    },
+    orderItems: {
+      type: [orderItemSchema],
+      required: true,
+    },
+
+    deliveryAddress: {
+      type: String,
+      required: true,
+    },
+
+    subtotal: {
+      type: Number,
+      required: true,
+    },
+
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+
+    orderStatus: {
+      type: String,
+      enum: [
+        "PENDING_PAYMENT",
+        "PAID",
+        "SHIPPED",
+        "OUT_FOR_DELIVERY",
+        "DELIVERED",
+        "CANCELLED",
+      ],
+      default: "PENDING_PAYMENT",
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: ["PENDING", "PAID", "FAILED"],
+      default: "PENDING",
+    },
+
+    paymentId: {
+      type: String,
+    },
+
+    paymentMethod: {
+      type: String,
     },
   },
   {
