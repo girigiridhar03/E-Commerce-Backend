@@ -200,3 +200,63 @@ export const getOrdersService = async (req) => {
     orders,
   };
 };
+
+export const confirmOrderService = async (req) => {
+  const { orderId } = req.params;
+
+  if (!orderId) {
+    throw new AppError("orderId is required", 400);
+  }
+
+  if (!mongoose.isValidObjectId(orderId)) {
+    throw new AppError(`Invalid orderId: ${orderId}`, 400);
+  }
+
+  const order = await Order.findById(orderId);
+
+  if (!order) {
+    throw new AppError(`order not found: ${orderId}`, 404);
+  }
+
+  if (
+    order.orderStatus !== "PENDING_PAYMENT" ||
+    order.paymentStatus !== "PENDING"
+  ) {
+    throw new AppError(`order status already: ${order.orderStatus}`, 400);
+  }
+
+  for (const item of order.orderItems) {
+    const updateProduct = await Product.findOneAndUpdate(
+      {
+        _id: item.product,
+        "variants._id": item.variant,
+        "variants.stock": { $gte: item.quantity },
+      },
+      {
+        $inc: {
+          "variants.$.stock": -item.quantity,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!updateProduct) {
+      throw new AppError(`product not found: ${item.product}`, 404);
+    }
+  }
+
+  order.orderStatus = "PAID";
+  order.paymentStatus = "PAID";
+
+  await order.save();
+
+  await Cart.deleteMany({ user: order.user });
+
+  return {
+    status: 200,
+    message: `Order status updated to ${order.orderStatus}`,
+    order,
+  };
+};

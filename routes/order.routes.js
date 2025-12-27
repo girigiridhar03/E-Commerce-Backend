@@ -3,7 +3,11 @@ import {
   authMiddleware,
   authorizeRole,
 } from "../middleware/auth.middleware.js";
-import { createOrder, getOrders } from "../controllers/order.controller.js";
+import {
+  confirmOrder,
+  createOrder,
+  getOrders,
+} from "../controllers/order.controller.js";
 const orderRouter = express.Router();
 
 orderRouter.post("/create", authMiddleware, createOrder);
@@ -13,5 +17,8 @@ orderRouter.get(
   authorizeRole("vendor", "admin"),
   getOrders
 );
+
+///// Dynamic Order /////
+orderRouter.post("/:orderId/confirmOrder", authMiddleware, confirmOrder);
 
 export default orderRouter;

@@ -1,4 +1,5 @@
 import {
+  confirmOrderService,
   createOrderService,
   getOrdersService,
 } from "../services/order.service.js";
@@ -15,4 +16,10 @@ export const getOrders = asyncHandler(async (req, res) => {
   const { status, message, orders } = await getOrdersService(req);
 
   response(res, status, message, orders);
+});
+
+export const confirmOrder = asyncHandler(async (req, res) => {
+  const { status, message, order } = await confirmOrderService(req);
+
+  response(res, status, message, order);
 });
