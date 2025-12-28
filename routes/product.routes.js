@@ -22,10 +22,9 @@ productRouter.post(
 
 productRouter.get(
   "/single-product/:productId/:variantId",
-  authMiddleware,
   singleProductDetails
 );
 
-productRouter.get("/all-products", authMiddleware, getAllProducts);
+productRouter.get("/all-products", getAllProducts);
 
 export default productRouter;
