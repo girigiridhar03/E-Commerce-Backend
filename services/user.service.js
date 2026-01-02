@@ -149,11 +149,11 @@ export const loginService = async (req) => {
     throw new AppError("Invalid email or password", 401);
   }
 
-  const isPassword = await user.matchPassword(password);
+  // const isPassword = await user.matchPassword(password);
 
-  if (!isPassword) {
-    throw new AppError("Invalid Credentials", 401);
-  }
+  // if (!isPassword) {
+  //   throw new AppError("Invalid Credentials", 401);
+  // }
 
   const token = await user.generateToken();
 

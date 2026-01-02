@@ -1,6 +1,26 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
 
+const attributes = new mongoose.Schema(
+  {
+    label: {
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+      default: "text",
+      required: true,
+      enum: ["text", "number", "select"],
+    },
+    required: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { __v: false }
+);
+
 const categorySchema = new mongoose.Schema(
   {
     name: {
@@ -19,6 +39,7 @@ const categorySchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    fields: [attributes],
   },
   { timestamps: true }
 );
