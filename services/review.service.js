@@ -1,0 +1,122 @@
+import mongoose from "mongoose";
+import { AppError } from "../utils/AppError.js";
+import Product from "../models/product.model.js";
+import Review from "../models/review.model.js";
+
+export const addReviewService = async (req) => {
+  const { productId, variantId, rating, comment } = req.body;
+  const loggedInUserId = req.user.id;
+
+  const requiredFields = ["productId", "variantId", "rating"];
+
+  for (let field of requiredFields) {
+    if (!req.body[field]) {
+      throw new AppError(`${field} is required`, 400);
+    }
+  }
+
+  if (!mongoose.isValidObjectId(productId)) {
+    throw new AppError(`Invalid ID: ${productId}`, 400);
+  }
+  if (!mongoose.isValidObjectId(variantId)) {
+    throw new AppError(`Invalid ID: ${variantId}`, 400);
+  }
+
+  if (rating < 1 || rating > 5) {
+    throw new AppError(`Rating need 1 to 5`, 400);
+  }
+
+  const product = await Product.findOne({
+    _id: productId,
+    "variants._id": variantId,
+  });
+
+  if (!product) {
+    throw new AppError(
+      `Product not found for this IDs: ${productId}, ${variantId}`,
+      400
+    );
+  }
+  const variant = product.variants.id(variantId);
+
+  const existingReview = await Review.findOne({
+    user: loggedInUserId,
+    product: productId,
+    variantId,
+  });
+
+  if (existingReview) {
+    const oldRating = existingReview.rating;
+
+    variant.ratingSum = variant.ratingSum - oldRating + rating;
+    variant.ratingBreakdown[oldRating] -= 1;
+    variant.ratingBreakdown[rating] += 1;
+
+    existingReview.rating = rating;
+    existingReview.comment = comment || existingReview.comment;
+    await existingReview.save();
+  } else {
+    await Review.create({
+      product: productId,
+      variantId,
+      user: loggedInUserId,
+      rating,
+      comment,
+    });
+
+    variant.ratingSum += rating;
+    variant.numReviews += 1;
+    variant.ratingBreakdown[rating] += 1;
+  }
+
+  variant.rating =
+    variant.numReviews > 0 ? variant.ratingSum / variant.numReviews : 0;
+
+  await product.save();
+
+  return {
+    status: 200,
+    message: "Rating submitted successfully",
+    rating: variant.rating.toFixed(1),
+    numReviews: variant.numReviews,
+    ratingBreakdown: variant.ratingBreakdown,
+  };
+};
+
+export const getReviewsByProductAndVariantService = async (req) => {
+  const { productId, variantId } = req.params;
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+  if (!productId) {
+    throw new AppError("productId is required", 400);
+  }
+  if (!variantId) {
+    throw new AppError("variantId is required", 400);
+  }
+
+  if (!mongoose.isValidObjectId(productId)) {
+    throw new AppError(`Invalid product ID: ${productId}`, 400);
+  }
+
+  if (!mongoose.isValidObjectId(variantId)) {
+    throw new AppError(`Invalid variant ID: ${variantId}`, 400);
+  }
+  const [reviews, totalReviews] = await Promise.all([
+    Review.find({ product: productId, variantId })
+      .populate("user", "username email profileImage")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+
+    Review.countDocuments({ product: productId, variantId }),
+  ]);
+  return {
+    status: 200,
+    message: `Fetched reviews successfully`,
+    reviews,
+    page,
+    limit,
+    totalPages: Math.ceil(totalReviews / limit),
+  };
+};

@@ -33,6 +33,7 @@ import productRouter from "./routes/product.routes.js";
 import category from "./routes/category.routes.js";
 import cartRouter from "./routes/cart.routes.js";
 import orderRouter from "./routes/order.routes.js";
+import reviewRouter from "./routes/review.routes.js";
 
 // Routes
 app.use("/api", userRouter);
@@ -40,6 +41,8 @@ app.use("/api/product", productRouter);
 app.use("/api/category", category);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/review", reviewRouter);
+
 // ErrorHandler
 import { errorHandler } from "./utils/handlers.js";
 app.use(errorHandler);

@@ -260,7 +260,9 @@ export const getAllProductsService = async (req) => {
         description: 1,
         rating: 1,
         tags: 1,
-        numReviews: 1,
+        variantNumReviews: "$variants.numReviews",
+        rating: "$variants.rating",
+        ratingBreakDown: "$variants.ratingBreakdown",
         categoryDetails: 1,
         variantId: "$variants._id",
         sku: "$variants.sku",
@@ -271,6 +273,12 @@ export const getAllProductsService = async (req) => {
         color: "$variants.color",
         images: "$variants.images",
         attributes: "$variants.attributes",
+        createdAt: 1,
+      },
+    },
+    {
+      $sort: {
+        createdAt: -1,
       },
     },
     {
