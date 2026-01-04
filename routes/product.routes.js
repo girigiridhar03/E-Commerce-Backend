@@ -3,6 +3,7 @@ import { upload } from "../middleware/multer.middleware.js";
 import {
   createProduct,
   getAllProducts,
+  getBrandsAndColor,
   singleProductDetails,
 } from "../controllers/product.controller.js";
 import {
@@ -26,5 +27,5 @@ productRouter.get(
 );
 
 productRouter.get("/all-products", getAllProducts);
-
+productRouter.get("/brand-colors", authMiddleware, getBrandsAndColor);
 export default productRouter;

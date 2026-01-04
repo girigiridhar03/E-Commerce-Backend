@@ -257,7 +257,7 @@ export const getAllProductsService = async (req) => {
         productName: 1,
         brand: 1,
         slug: 1,
-        description: 1,
+        description: "$variants.description",
         rating: 1,
         tags: 1,
         variantNumReviews: "$variants.numReviews",
@@ -310,5 +310,72 @@ export const getAllProductsService = async (req) => {
     totalPages,
     page,
     limit,
+  };
+};
+
+export const getBrandsAndColorService = async () => {
+  const productBrandColors = await Product.aggregate([
+    {
+      $facet: {
+        brands: [
+          {
+            $match: {
+              isActive: true,
+              isDeleted: false,
+            },
+          },
+          {
+            $group: {
+              _id: "$brand",
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              name: "$_id",
+            },
+          },
+          {
+            $sort: {
+              name: 1,
+            },
+          },
+        ],
+
+        colors: [
+          {
+            $match: {
+              isActive: true,
+              isDeleted: false,
+            },
+          },
+          {
+            $unwind: "$variants",
+          },
+          {
+            $group: {
+              _id: "$variants.color",
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              name: "$_id",
+            },
+          },
+          {
+            $sort: {
+              name: 1,
+            },
+          },
+        ],
+      },
+    },
+  ]);
+
+  return {
+    status: 200,
+    message: "Fetched colors and brand names successfully",
+    result: productBrandColors[0],
   };
 };
