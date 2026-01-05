@@ -204,11 +204,24 @@ export const getAllProductsService = async (req) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
+  let sort = { createdAt: -1 };
   const search = req.query.search;
   const match = {
     isActive: true,
     isDeleted: false,
   };
+
+  const SORT_MAP = {
+    asc: 1,
+    desc: -1,
+  };
+
+  const { sort: sortQuery } = req.query;
+
+  if (SORT_MAP[sortQuery]) {
+    sort = { currentPrice: SORT_MAP[sortQuery] };
+  }
+
   if (search) {
     match.$text = { $search: search };
   }
@@ -277,9 +290,7 @@ export const getAllProductsService = async (req) => {
       },
     },
     {
-      $sort: {
-        createdAt: -1,
-      },
+      $sort: sort,
     },
     {
       $skip: skip,
