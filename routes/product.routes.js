@@ -4,6 +4,7 @@ import {
   createProduct,
   getAllProducts,
   getBrandsAndColor,
+  releatedProducts,
   singleProductDetails,
 } from "../controllers/product.controller.js";
 import {
@@ -25,6 +26,7 @@ productRouter.get(
   "/single-product/:productId/:variantId",
   singleProductDetails
 );
+productRouter.get("/related-products/:selectedProductId", releatedProducts);
 
 productRouter.get("/all-products", getAllProducts);
 productRouter.get("/brand-colors", authMiddleware, getBrandsAndColor);

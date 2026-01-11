@@ -390,3 +390,87 @@ export const getBrandsAndColorService = async () => {
     result: productBrandColors[0],
   };
 };
+
+export const relatedProductsService = async (req) => {
+  const { selectedProductId } = req.params;
+
+  if (!selectedProductId) {
+    throw new AppError("Id is required", 400);
+  }
+
+  if (!mongoose.isValidObjectId(selectedProductId)) {
+    throw new AppError(`Invalid ID: ${selectedProductId}`);
+  }
+
+  const selectedProduct = await Product.findById(selectedProductId);
+
+  if (!selectedProduct) {
+    throw new AppError("Product not found", 404);
+  }
+
+  const relatedProducts = await Product.aggregate([
+    {
+      $match: {
+        _id: { $ne: new mongoose.Types.ObjectId(selectedProductId) },
+        tags: { $in: selectedProduct.tags },
+      },
+    },
+    {
+      $lookup: {
+        from: "categories",
+        let: { categoryId: "$category" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$_id", "$$categoryId"] },
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              slug: 1,
+            },
+          },
+        ],
+        as: "categoryDetails",
+      },
+    },
+    {
+      $unwind: "$categoryDetails",
+    },
+    {
+      $addFields: {
+        singleVariant: { $arrayElemAt: ["$variants", 0] },
+      },
+    },
+    { $sort: { createdAt: -1 } },
+
+    {
+      $project: {
+        variants: 0,
+        productCreatedBy: 0,
+        category: 0,
+        isActive: 0,
+        isDeleted: 0,
+        createdAt: 0,
+        updatedAt: 0,
+        "singleVariant.rating": 0,
+        "singleVariant.numReviews": 0,
+        "singleVariant.ratingSum": 0,
+        "singleVariant.ratingBreakdown": 0,
+        "singleVariant.createdAt": 0,
+        "singleVariant.updatedAt": 0,
+        "singleVariant.stock": 0,
+      },
+    },
+    {
+      $limit: 4,
+    },
+  ]);
+  return {
+    status: 200,
+    message: "Related products fetched successfully",
+    relatedProducts,
+  };
+};

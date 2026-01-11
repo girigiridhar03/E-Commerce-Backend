@@ -2,6 +2,7 @@ import {
   createProductService,
   getAllProductsService,
   getBrandsAndColorService,
+  relatedProductsService,
   singleProductDetailsService,
 } from "../services/product.service.js";
 import { asyncHandler } from "../utils/handlers.js";
@@ -35,4 +36,12 @@ export const getBrandsAndColor = asyncHandler(async (_, res) => {
   const { status, message, result } = await getBrandsAndColorService();
 
   response(res, status, message, result);
+});
+
+export const releatedProducts = asyncHandler(async (req, res) => {
+  const { status, message, relatedProducts } = await relatedProductsService(
+    req
+  );
+
+  response(res, status, message, relatedProducts);
 });
