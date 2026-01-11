@@ -412,7 +412,12 @@ export const relatedProductsService = async (req) => {
     {
       $match: {
         _id: { $ne: new mongoose.Types.ObjectId(selectedProductId) },
-        tags: { $in: selectedProduct.tags },
+        $expr: {
+          $gte: [
+            { $size: { $setIntersection: ["$tags", selectedProduct.tags] } },
+            2,
+          ],
+        },
       },
     },
     {
