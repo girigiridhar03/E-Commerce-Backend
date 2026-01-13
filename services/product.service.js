@@ -309,8 +309,7 @@ export const getAllProductsService = async (req) => {
     { $match: { "variants.stock": { $gt: 0 } } },
     { $count: "total" },
   ]);
-
-  const totalProducts = totalCountAgg?.[0].total || 0;
+  const totalProducts = totalCountAgg?.[0]?.total || 0;
   const totalPages = Math.ceil(totalProducts / limit);
 
   return {
