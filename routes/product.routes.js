@@ -24,10 +24,15 @@ productRouter.post(
 
 productRouter.get(
   "/single-product/:productId/:variantId",
+  authMiddleware,
   singleProductDetails
 );
-productRouter.get("/related-products/:selectedProductId", releatedProducts);
+productRouter.get(
+  "/related-products/:selectedProductId",
+  authMiddleware,
+  releatedProducts
+);
 
-productRouter.get("/all-products", getAllProducts);
+productRouter.get("/all-products", authMiddleware, getAllProducts);
 productRouter.get("/brand-colors", authMiddleware, getBrandsAndColor);
 export default productRouter;
