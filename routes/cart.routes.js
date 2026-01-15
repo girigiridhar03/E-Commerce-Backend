@@ -2,6 +2,7 @@ import express from "express";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import {
   addToCart,
+  cartCount,
   cartItems,
   clearCartItems,
   deleteCartItem,
@@ -12,6 +13,7 @@ const cartRouter = express.Router();
 cartRouter.post("/addToCart", authMiddleware, addToCart);
 cartRouter.get("/cart-items", authMiddleware, cartItems);
 cartRouter.delete("/clear-cart", authMiddleware, clearCartItems);
+cartRouter.get("/cart-count", authMiddleware, cartCount);
 
 ///// Dynamic Routes /////
 cartRouter.delete(

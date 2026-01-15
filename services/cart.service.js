@@ -223,3 +223,15 @@ export const cartItemsService = async (req) => {
     result: cartItems,
   };
 };
+
+export const cartCountService = async (req) => {
+  const loggedInUserId = req.user.id;
+
+  const cartItemCount  = await Cart.countDocuments({ user: loggedInUserId });
+
+  return {
+    status: 200,
+    message: "Cart Total fetched successfully",
+    count: cartItemCount ,
+  };
+};

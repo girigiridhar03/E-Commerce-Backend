@@ -1,5 +1,6 @@
 import {
   addToCartService,
+  cartCountService,
   cartItemsService,
   clearCartItemsService,
   deleteCartItemService,
@@ -26,4 +27,9 @@ export const cartItems = asyncHandler(async (req, res) => {
   const { status, message, result } = await cartItemsService(req);
 
   response(res, status, message, result?.[0]);
+});
+
+export const cartCount = asyncHandler(async (req, res) => {
+  const { status, message, count } = await cartCountService(req);
+  response(res, status, message, count);
 });
