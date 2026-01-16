@@ -6,6 +6,7 @@ import {
   cartItems,
   clearCartItems,
   deleteCartItem,
+  deleteCartProduct,
 } from "../controllers/cart.controller.js";
 
 const cartRouter = express.Router();
@@ -20,6 +21,12 @@ cartRouter.delete(
   "/deleteItem/:productId/:variantId",
   authMiddleware,
   deleteCartItem
+);
+
+cartRouter.delete(
+  "/delete-product/:productId/:variantId",
+  authMiddleware,
+  deleteCartProduct
 );
 
 export default cartRouter;

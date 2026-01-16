@@ -227,11 +227,47 @@ export const cartItemsService = async (req) => {
 export const cartCountService = async (req) => {
   const loggedInUserId = req.user.id;
 
-  const cartItemCount  = await Cart.countDocuments({ user: loggedInUserId });
+  const cartItemCount = await Cart.countDocuments({ user: loggedInUserId });
 
   return {
     status: 200,
     message: "Cart Total fetched successfully",
-    count: cartItemCount ,
+    count: cartItemCount,
+  };
+};
+
+export const deleteCartProductService = async (req) => {
+  const loggedInUser = req.user;
+  const { productId, variantId } = req.params;
+
+  if (!productId) {
+    throw new AppError("productId is requried", 400);
+  }
+
+  if (!variantId) {
+    throw new AppError("variantId is requried", 400);
+  }
+
+  if (!mongoose.isValidObjectId(productId)) {
+    throw new AppError(`Invalid productId: ${productId}`, 400);
+  }
+
+  if (!mongoose.isValidObjectId(variantId)) {
+    throw new AppError(`Invalid variantId: ${variantId}`, 400);
+  }
+
+  const deletedResult = await Cart.deleteOne({
+    product: productId,
+    variant: variantId,
+    user: loggedInUser.id,
+  });
+
+  if (deletedResult?.deletedCount === 0) {
+    throw new AppError("Cart item not found", 404);
+  }
+
+  return {
+    status: 200,
+    message: "Item removed from the cart",
   };
 };
