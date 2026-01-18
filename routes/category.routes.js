@@ -5,6 +5,7 @@ import {
 } from "../middleware/auth.middleware.js";
 import {
   addCategory,
+  categoryNamesAndFields,
   getCategoryNames,
 } from "../controllers/category.controller.js";
 
@@ -18,5 +19,6 @@ category.post(
 );
 
 category.get("/", authMiddleware, getCategoryNames);
+category.get("/name-fields", authMiddleware, categoryNamesAndFields);
 
 export default category;

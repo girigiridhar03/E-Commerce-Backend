@@ -1,5 +1,6 @@
 import {
   addCategoryService,
+  categoryNamesAndFieldsService,
   getCategoryNamesService,
 } from "../services/category.service.js";
 import { asyncHandler } from "../utils/handlers.js";
@@ -10,9 +11,13 @@ export const addCategory = asyncHandler(async (req, res) => {
   response(res, status, message, newCategory);
 });
 
-export const getCategoryNames = asyncHandler(
-  asyncHandler(async (_, res) => {
-    const { status, message, names } = await getCategoryNamesService();
-    response(res, status, message, names);
-  }),
-);
+export const getCategoryNames = asyncHandler(async (_, res) => {
+  const { status, message, names } = await getCategoryNamesService();
+  response(res, status, message, names);
+});
+
+export const categoryNamesAndFields = asyncHandler(async (_, res) => {
+  const { status, message, nameAndFields } =
+    await categoryNamesAndFieldsService();
+  response(res, status, message, nameAndFields);
+});

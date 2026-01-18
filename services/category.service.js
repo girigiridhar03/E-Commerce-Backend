@@ -59,3 +59,13 @@ export const getCategoryNamesService = async () => {
     names: categoryNames,
   };
 };
+
+export const categoryNamesAndFieldsService = async () => {
+  const categoryNameAndFields = await Category.find({}).select("name fields");
+
+  return {
+    status: 200,
+    message: "Fetched category names successfully.",
+    nameAndFields: categoryNameAndFields,
+  };
+};
