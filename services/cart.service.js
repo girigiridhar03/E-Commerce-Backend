@@ -45,13 +45,77 @@ export const addToCartService = async (req) => {
         variant: variantId,
       },
     },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
+
+  const cartSummary = await Cart.aggregate([
+    {
+      $match: {
+        user: new mongoose.Types.ObjectId(loggedInUser.id),
+      },
+    },
+    {
+      $lookup: {
+        from: "products",
+        localField: "product",
+        foreignField: "_id",
+        as: "productDetails",
+      },
+    },
+    {
+      $unwind: "$productDetails",
+    },
+    {
+      $addFields: {
+        selectedVariant: {
+          $arrayElemAt: [
+            {
+              $filter: {
+                input: "$productDetails.variants",
+                as: "variant",
+                cond: {
+                  $eq: ["$$variant._id", "$variant"],
+                },
+              },
+            },
+            0,
+          ],
+        },
+      },
+    },
+    {
+      $group: {
+        _id: 0,
+        totalAmount: {
+          $sum: {
+            $multiply: ["$selectedVariant.currentPrice", "$quantity"],
+          },
+        },
+        totalProducts: {
+          $sum: 1,
+        },
+        totalQuantity: {
+          $sum: "$quantity",
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        summary: {
+          totalAmount: "$totalAmount",
+          totalProducts: "$totalProducts",
+          totalQuantity: "$totalQuantity",
+        },
+      },
+    },
+  ]);
 
   return {
     status: 200,
     message: "Item added to cart",
     cart,
+    cartSummary: cartSummary?.[0]?.summary ?? {},
   };
 };
 
@@ -87,14 +151,73 @@ export const deleteCartItemService = async (req) => {
     },
     {
       new: true,
-    }
+    },
   ).select("-createdAt -__v -updatedAt");
+
+  const summary = await Cart.aggregate([
+    {
+      $match: {
+        user: new mongoose.Types.ObjectId(loggedInUser.id),
+      },
+    },
+    {
+      $lookup: {
+        from: "products",
+        localField: "product",
+        foreignField: "_id",
+        as: "productDetails",
+      },
+    },
+    {
+      $unwind: "$productDetails",
+    },
+    {
+      $addFields: {
+        selectedVariant: {
+          $arrayElemAt: [
+            {
+              $filter: {
+                input: "$productDetails.variants",
+                as: "variant",
+                cond: {
+                  $eq: ["$$variant._id", "$variant"],
+                },
+              },
+            },
+            0,
+          ],
+        },
+      },
+    },
+    {
+      $group: {
+        _id: 0,
+        totalAmount: {
+          $sum: {
+            $multiply: ["$selectedVariant.currentPrice", "$quantity"],
+          },
+        },
+        totalProducts: {
+          $sum: 1,
+        },
+        totalQuantity: {
+          $sum: "$quantity",
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+      },
+    },
+  ]);
 
   if (updatedCart) {
     return {
       status: 200,
       message: "Item quantity decreased",
       result: updatedCart,
+      summary: summary?.[0],
     };
   }
 
@@ -111,6 +234,7 @@ export const deleteCartItemService = async (req) => {
   return {
     status: 200,
     message: "Item removed from the cart",
+    summary: summary?.[0],
   };
 };
 
@@ -220,7 +344,7 @@ export const cartItemsService = async (req) => {
   return {
     status: 200,
     message: "Fetched cart items",
-    result: cartItems,
+    result: cartItems?.[0] ?? {},
   };
 };
 

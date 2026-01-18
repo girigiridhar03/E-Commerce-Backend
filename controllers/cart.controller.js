@@ -10,13 +10,13 @@ import { asyncHandler } from "../utils/handlers.js";
 import { response } from "../utils/response.js";
 
 export const addToCart = asyncHandler(async (req, res) => {
-  const { status, message, cart } = await addToCartService(req);
-  response(res, status, message, cart);
+  const { status, message, cart, cartSummary } = await addToCartService(req);
+  response(res, status, message, { cart, cartSummary });
 });
 
 export const deleteCartItem = asyncHandler(async (req, res) => {
-  const { status, message, result } = await deleteCartItemService(req);
-  response(res, status, message, result);
+  const { status, message, result, summary } = await deleteCartItemService(req);
+  response(res, status, message, { result, summary });
 });
 
 export const clearCartItems = asyncHandler(async (req, res) => {
@@ -27,7 +27,7 @@ export const clearCartItems = asyncHandler(async (req, res) => {
 export const cartItems = asyncHandler(async (req, res) => {
   const { status, message, result } = await cartItemsService(req);
 
-  response(res, status, message, result?.[0]);
+  response(res, status, message, result);
 });
 
 export const cartCount = asyncHandler(async (req, res) => {
