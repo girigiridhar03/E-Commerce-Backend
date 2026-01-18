@@ -27,7 +27,7 @@ export const addCategoryService = async (req) => {
     if (!type || !allowedTypes.includes(type)) {
       throw new AppError(
         `Invalid type for feild ${label}. Allowed: ${allowedTypes.join(", ")}`,
-        400
+        400,
       );
     }
 
@@ -47,5 +47,15 @@ export const addCategoryService = async (req) => {
     status: 201,
     message: `${name} is added successfully`,
     newCategory,
+  };
+};
+
+export const getCategoryNamesService = async () => {
+  const categoryNames = await Category.find({}).select("name");
+
+  return {
+    status: 200,
+    message: "Fetched category names successfully.",
+    names: categoryNames,
   };
 };

@@ -1,6 +1,12 @@
 import express from "express";
-import { authMiddleware, authorizeRole } from "../middleware/auth.middleware.js";
-import { addCategory } from "../controllers/category.controller.js";
+import {
+  authMiddleware,
+  authorizeRole,
+} from "../middleware/auth.middleware.js";
+import {
+  addCategory,
+  getCategoryNames,
+} from "../controllers/category.controller.js";
 
 const category = express.Router();
 
@@ -8,7 +14,9 @@ category.post(
   "/new",
   authMiddleware,
   authorizeRole("admin", "vendor"),
-  addCategory
+  addCategory,
 );
+
+category.get("/", authMiddleware, getCategoryNames);
 
 export default category;
