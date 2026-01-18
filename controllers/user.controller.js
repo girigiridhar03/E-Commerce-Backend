@@ -24,8 +24,8 @@ export const verifyEmail = asyncHandler(async (req, res) => {
 });
 
 export const login = asyncHandler(async (req, res) => {
-  const { status, message, token } = await loginService(req);
-  response(res, status, message, token);
+  const { status, message, token, role } = await loginService(req);
+  response(res, status, message, { token, role });
 });
 
 ///// Analytics Dashboard /////

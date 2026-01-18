@@ -161,6 +161,7 @@ export const loginService = async (req) => {
     status: 200,
     message: "User logged in successfully",
     token,
+    role: user?.role,
   };
 };
 
