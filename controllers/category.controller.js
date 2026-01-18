@@ -1,7 +1,7 @@
 import {
   addCategoryService,
-  categoryNamesAndFieldsService,
   getCategoryNamesService,
+  getSelectedFieldsService,
 } from "../services/category.service.js";
 import { asyncHandler } from "../utils/handlers.js";
 import { response } from "../utils/response.js";
@@ -16,8 +16,7 @@ export const getCategoryNames = asyncHandler(async (_, res) => {
   response(res, status, message, names);
 });
 
-export const categoryNamesAndFields = asyncHandler(async (_, res) => {
-  const { status, message, nameAndFields } =
-    await categoryNamesAndFieldsService();
-  response(res, status, message, nameAndFields);
+export const getSelectedFields = asyncHandler(async (req, res) => {
+  const { status, message, fields } = await getSelectedFieldsService(req);
+  response(res, status, message, fields);
 });

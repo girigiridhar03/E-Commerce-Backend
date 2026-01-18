@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Category from "../models/category.model.js";
 import { AppError } from "../utils/AppError.js";
 
@@ -60,12 +61,26 @@ export const getCategoryNamesService = async () => {
   };
 };
 
-export const categoryNamesAndFieldsService = async () => {
-  const categoryNameAndFields = await Category.find({}).select("name fields");
+export const getSelectedFieldsService = async (req) => {
+  const { categoryId } = req.params;
+
+  if (!categoryId) {
+    throw new AppError("categoryId is required", 400);
+  }
+
+  if (!mongoose.isValidObjectId(categoryId)) {
+    throw new AppError(`Invalid ID: ${categoryId}`, 400);
+  }
+
+  const fields = await Category.findById(categoryId).select("fields");
+
+  if (!fields) {
+    throw new AppError(`Fields are not found for this ID: ${categoryId}`);
+  }
 
   return {
     status: 200,
     message: "Fetched category names successfully.",
-    nameAndFields: categoryNameAndFields,
+    fields,
   };
 };

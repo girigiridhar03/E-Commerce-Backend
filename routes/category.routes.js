@@ -5,8 +5,8 @@ import {
 } from "../middleware/auth.middleware.js";
 import {
   addCategory,
-  categoryNamesAndFields,
   getCategoryNames,
+  getSelectedFields,
 } from "../controllers/category.controller.js";
 
 const category = express.Router();
@@ -19,6 +19,8 @@ category.post(
 );
 
 category.get("/", authMiddleware, getCategoryNames);
-category.get("/name-fields", authMiddleware, categoryNamesAndFields);
+
+///// Dynamic Routes /////
+category.get("/:categoryId", authMiddleware, getSelectedFields);
 
 export default category;
