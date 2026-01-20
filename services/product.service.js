@@ -11,12 +11,24 @@ export const createProductService = async (req) => {
     let { productID, productName, description, category, brand } = req.body;
 
     const user = req.user;
-    const images = req?.files;
-    const tags = req.body?.tags ? JSON.parse(req.body.tags) : null;
+    const tags = req.body.tags
+      ? req.body.tags.split(",").map((t) => t.trim())
+      : [];
+
     const variants = req.body?.variants ? JSON.parse(req.body.variants) : null;
+
     const attributes = req.body?.attributes
       ? JSON.parse(req.body.attributes)
       : null;
+
+    if (!variants || Object.keys(variants).length === 0) {
+      throw new AppError("Variants are required", 400);
+    }
+
+    if (!attributes || Object.keys(attributes).length === 0) {
+      throw new AppError("Attributes are required", 400);
+    }
+
     const requiredFields = [
       "productName",
       "description",
@@ -34,19 +46,23 @@ export const createProductService = async (req) => {
         }
       }
     }
-    variants.description = description;
-    if (images?.length === 0) {
-      throw new AppError("Product Images is required", 400);
+    if (variants) {
+      variants.description = description;
+    }
+
+    const files = req.files || [];
+    if (!req.files || req.files.length === 0) {
+      throw new AppError("Product images are required", 400);
     }
 
     const imagesResponse = await Promise.all(
-      req?.files?.map(async (file) => {
-        const result = await uploadToCloudinary(file?.path);
+      files.map(async (file) => {
+        const result = await uploadToCloudinary(file.path);
         return {
-          url: result?.url,
-          publicId: result?.public_id,
+          url: result.url,
+          publicId: result.public_id,
         };
-      })
+      }),
     );
 
     let product;
