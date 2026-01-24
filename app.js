@@ -6,7 +6,10 @@ import path from "path";
 
 const app = express();
 
-const allowOrigin = ["http://localhost:5173"];
+const allowOrigin = [
+  "http://localhost:5173",
+  "https://e-commerce-frontend-sandy-chi.vercel.app",
+];
 
 app.use(express.json());
 app.use(cookieParser());
@@ -20,7 +23,7 @@ app.use(
       }
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  })
+  }),
 );
 
 const __filename = fileURLToPath(import.meta.url);
