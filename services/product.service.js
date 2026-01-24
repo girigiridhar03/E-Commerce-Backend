@@ -558,6 +558,28 @@ export const getOwnedProductsService = async (req) => {
       $unwind: "$categoryDetails",
     },
     {
+      $lookup: {
+        from: "users",
+        localField: "productCreatedBy",
+        foreignField: "_id",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              username: 1,
+              email: 1,
+              profileImage: 1,
+              phoneNumber: 1,
+            },
+          },
+        ],
+        as: "productCreatedByDetails",
+      },
+    },
+    {
+      $unwind: "$productCreatedByDetails",
+    },
+    {
       $unwind: "$variants",
     },
     {
@@ -583,6 +605,7 @@ export const getOwnedProductsService = async (req) => {
         images: "$variants.images",
         attributes: "$variants.attributes",
         createdAt: 1,
+        productCreatedByDetails: 1,
       },
     },
     {
