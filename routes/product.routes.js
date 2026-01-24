@@ -4,6 +4,7 @@ import {
   createProduct,
   getAllProducts,
   getBrandsAndColor,
+  getOwnedProducts,
   releatedProducts,
   singleProductDetails,
 } from "../controllers/product.controller.js";
@@ -19,20 +20,27 @@ productRouter.post(
   authMiddleware,
   authorizeRole("vendor", "admin"),
   upload.array("images", 5),
-  createProduct
-);
-
-productRouter.get(
-  "/single-product/:productId/:variantId",
-  authMiddleware,
-  singleProductDetails
-);
-productRouter.get(
-  "/related-products/:selectedProductId",
-  authMiddleware,
-  releatedProducts
+  createProduct,
 );
 
 productRouter.get("/all-products", authMiddleware, getAllProducts);
 productRouter.get("/brand-colors", authMiddleware, getBrandsAndColor);
+productRouter.get(
+  "/my",
+  authMiddleware,
+  authorizeRole("vendor", "admin"),
+  getOwnedProducts,
+);
+
+///// Dynamic Routes /////
+productRouter.get(
+  "/single-product/:productId/:variantId",
+  authMiddleware,
+  singleProductDetails,
+);
+productRouter.get(
+  "/related-products/:selectedProductId",
+  authMiddleware,
+  releatedProducts,
+);
 export default productRouter;

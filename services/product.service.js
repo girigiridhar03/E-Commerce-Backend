@@ -218,7 +218,7 @@ export const singleProductDetailsService = async (req) => {
 
 export const getAllProductsService = async (req) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = parseInt(req.query.limit) || 12;
   const skip = (page - 1) * limit;
   let sort = { createdAt: -1 };
   const search = req.query.search;
@@ -242,7 +242,7 @@ export const getAllProductsService = async (req) => {
     match.$text = { $search: search };
   }
   if (req.query.category && mongoose.isValidObjectId(req.query.category)) {
-    match.category = req.query.category;
+    match.category = new mongoose.Types.ObjectId(req.query.category);
   }
   const aggregationPipeline = [
     {
@@ -492,5 +492,128 @@ export const relatedProductsService = async (req) => {
     status: 200,
     message: "Related products fetched successfully",
     relatedProducts,
+  };
+};
+
+export const getOwnedProductsService = async (req) => {
+  const loggedInUserId = req.user.id;
+
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 12;
+  const skip = (page - 1) * limit;
+  const sort = { createdAt: -1 };
+  const search = req.query.search;
+  const match = {
+    isDeleted: false,
+    productCreatedBy: new mongoose.Types.ObjectId(loggedInUserId),
+  };
+
+  if (req.user.role === "admin") {
+    delete match.productCreatedBy;
+  }
+
+  const sortQuery = {
+    asc: 1,
+    desc: -1,
+  };
+
+  if (sortQuery[req.query.sort]) {
+    sort.currentPrice = sortQuery[req.query.sort];
+  }
+
+  if (search) {
+    match.text = { $search: search };
+  }
+
+  if (req.query.category && mongoose.isValidObjectId(req.query.category)) {
+    match.category = new mongoose.Types.ObjectId(req.query.category);
+  }
+
+  const products = await Product.aggregate([
+    {
+      $match: match,
+    },
+    {
+      $lookup: {
+        from: "categories",
+        let: { categoryId: "$category" },
+        pipeline: [
+          {
+            $match: {
+              $expr: ["$_id", "$$categoryId"],
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              slug: 1,
+            },
+          },
+        ],
+        as: "categoryDetails",
+      },
+    },
+    {
+      $unwind: "$categoryDetails",
+    },
+    {
+      $unwind: "$variants",
+    },
+    {
+      $project: {
+        _id: 1,
+        productName: 1,
+        brand: 1,
+        slug: 1,
+        description: "$variants.description",
+        rating: 1,
+        tags: 1,
+        variantNumReviews: "$variants.numReviews",
+        rating: "$variants.rating",
+        ratingBreakDown: "$variants.ratingBreakdown",
+        categoryDetails: 1,
+        variantId: "$variants._id",
+        sku: "$variants.sku",
+        originalPrice: "$variants.originalPrice",
+        discountPercent: "$variants.discountPercent",
+        currentPrice: "$variants.currentPrice",
+        stock: "$variants.stock",
+        color: "$variants.color",
+        images: "$variants.images",
+        attributes: "$variants.attributes",
+        createdAt: 1,
+      },
+    },
+    {
+      $sort: sort,
+    },
+    {
+      $skip: skip,
+    },
+    {
+      $limit: limit,
+    },
+  ]);
+
+  const totalCountAgg = await Product.aggregate([
+    { $match: match },
+    { $unwind: "$variants" },
+    {
+      $count: "total",
+    },
+  ]);
+
+  const totalProducts = totalCountAgg?.[0]?.total || 0;
+  const totalPages = Math.ceil(totalProducts / limit);
+
+  return {
+    status: 200,
+    message: "Successfully fetched your products",
+    products,
+    totalPages,
+    limit,
+    page,
+    totalProducts,
   };
 };

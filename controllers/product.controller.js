@@ -2,6 +2,7 @@ import {
   createProductService,
   getAllProductsService,
   getBrandsAndColorService,
+  getOwnedProductsService,
   relatedProductsService,
   singleProductDetailsService,
 } from "../services/product.service.js";
@@ -39,9 +40,21 @@ export const getBrandsAndColor = asyncHandler(async (_, res) => {
 });
 
 export const releatedProducts = asyncHandler(async (req, res) => {
-  const { status, message, relatedProducts } = await relatedProductsService(
-    req
-  );
+  const { status, message, relatedProducts } =
+    await relatedProductsService(req);
 
   response(res, status, message, relatedProducts);
+});
+
+export const getOwnedProducts = asyncHandler(async (req, res) => {
+  const { status, message, products, totalPages, limit, page, totalProducts } =
+    await getOwnedProductsService(req);
+
+  response(res, status, message, {
+    products,
+    totalPages,
+    limit,
+    page,
+    totalProducts,
+  });
 });
