@@ -7,6 +7,7 @@ import {
   verifyEmailService,
   getNewUsersService,
   singleUserDetailsService,
+  meService,
 } from "../services/user.service.js";
 import { asyncHandler } from "../utils/handlers.js";
 import { response } from "../utils/response.js";
@@ -26,6 +27,12 @@ export const verifyEmail = asyncHandler(async (req, res) => {
 export const login = asyncHandler(async (req, res) => {
   const { status, message, token, role } = await loginService(req);
   response(res, status, message, { token, role });
+});
+
+export const me = asyncHandler(async (req, res) => {
+  const { status, message, userDetails } = await meService(req);
+
+  response(res, status, message, userDetails);
 });
 
 ///// Analytics Dashboard /////

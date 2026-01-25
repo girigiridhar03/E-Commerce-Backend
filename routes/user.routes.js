@@ -5,6 +5,7 @@ import {
   getUserRoleDistribution,
   getUserStats,
   login,
+  me,
   signup,
   singleUserDetails,
   verifyEmail,
@@ -21,32 +22,32 @@ const userRouter = express.Router();
 userRouter.post("/signup", upload.single("image"), signup);
 userRouter.post("/verify-email/:token", verifyEmail);
 userRouter.post("/login", login);
-
+userRouter.get("/me", authMiddleware, me);
 ///// Analytics Dashboard Routes /////
 userRouter.get(
   "/user/analytics/user-stats",
   authMiddleware,
   authorizeRole("admin"),
-  getUserStats
+  getUserStats,
 );
 
 userRouter.get(
   "/user/analytics/signup-trends",
   authMiddleware,
   authorizeRole("admin"),
-  getSignUpTrends
+  getSignUpTrends,
 );
 userRouter.get(
   "/user/analytics/role-count",
   authMiddleware,
   authorizeRole("admin"),
-  getUserRoleDistribution
+  getUserRoleDistribution,
 );
 userRouter.get(
   "/user/analytics/new-users",
   authMiddleware,
   authorizeRole("admin"),
-  getNewUsers
+  getNewUsers,
 );
 
 ///// Dynamic Routes /////

@@ -165,6 +165,24 @@ export const loginService = async (req) => {
   };
 };
 
+export const meService = async (req) => {
+  const userid = req.user.id;
+
+  const userDetails = await User.findById(userid).select(
+    "username email phoneNumber role address profileImage pincode createdAt",
+  );
+
+  if (!userDetails) {
+    throw new AppError("User not found", 404);
+  }
+
+  return {
+    status: 200,
+    message: "User details fetched successfully",
+    userDetails,
+  };
+};
+
 ///// Analytics Dashboard Services /////
 export const getUserStatsService = async () => {
   const userStats = await User.aggregate([
