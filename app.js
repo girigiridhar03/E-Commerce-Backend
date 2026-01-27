@@ -22,10 +22,11 @@ app.use(
         cb(new Error("Not allowed by cors"));
       }
     },
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, "public")));
