@@ -34,7 +34,7 @@ export const addReviewService = async (req) => {
   if (!product) {
     throw new AppError(
       `Product not found for this IDs: ${productId}, ${variantId}`,
-      400
+      400,
     );
   }
   const variant = product.variants.id(variantId);
@@ -118,5 +118,65 @@ export const getReviewsByProductAndVariantService = async (req) => {
     page,
     limit,
     totalPages: Math.ceil(totalReviews / limit),
+  };
+};
+
+export const getSelectedProductReviewService = async (req) => {
+  const { pId, vId } = req.params;
+
+  if (!pId) {
+    throw new AppError("Product Id required", 400);
+  }
+  if (!vId) {
+    throw new AppError("Variant Id required", 400);
+  }
+
+  if (!mongoose.isValidObjectId(pId)) {
+    throw new AppError(`Product Id is invalid: ${pId}`);
+  }
+  if (!mongoose.isValidObjectId(vId)) {
+    throw new AppError(`Variant Id is invalid: ${vId}`);
+  }
+
+  const productId = new mongoose.Types.ObjectId(pId);
+  const variantId = new mongoose.Types.ObjectId(vId);
+
+  const productReview = await Product.aggregate([
+    {
+      $match: {
+        _id: productId,
+      },
+    },
+    {
+      $addFields: {
+        selectedVariantReview: {
+          $arrayElemAt: [
+            {
+              $filter: {
+                input: "$variants",
+                as: "variant",
+                cond: { $eq: ["$$variant._id", variantId] },
+              },
+            },
+            0,
+          ],
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        "selectedVariantReview.rating": 1,
+        "selectedVariantReview.numReviews": 1,
+        "selectedVariantReview.ratingSum": 1,
+        "selectedVariantReview.ratingBreakdown": 1,
+      },
+    },
+  ]);
+
+  return {
+    status: 200,
+    success: "successfully fetched review for selected product",
+    review: productReview?.[0]?.selectedVariantReview,
   };
 };
