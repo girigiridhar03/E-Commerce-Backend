@@ -640,3 +640,39 @@ export const getOwnedProductsService = async (req) => {
     totalProducts,
   };
 };
+
+export const getAllColorsService = async () => {
+  const colors = await Product.aggregate([
+    {
+      $match: {
+        isActive: true,
+        isDeleted: false,
+      },
+    },
+    {
+      $unwind: "$variants",
+    },
+    {
+      $group: {
+        _id: "$variants.color",
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        color: "$_id",
+      },
+    },
+    {
+      $sort: {
+        color: 1,
+      },
+    },
+  ]);
+
+  return {
+    status: 200,
+    message: "Fetched colors successfully",
+    colors: colors,
+  };
+};

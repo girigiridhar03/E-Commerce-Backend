@@ -1,5 +1,6 @@
 import {
   createProductService,
+  getAllColorsService,
   getAllProductsService,
   getBrandsAndColorService,
   getOwnedProductsService,
@@ -57,4 +58,9 @@ export const getOwnedProducts = asyncHandler(async (req, res) => {
     page,
     totalProducts,
   });
+});
+
+export const getAllColors = asyncHandler(async (_, res) => {
+  const { status, message, colors } = await getAllColorsService();
+  response(res, status, message, colors);
 });

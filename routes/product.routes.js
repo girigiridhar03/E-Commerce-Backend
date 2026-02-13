@@ -2,6 +2,7 @@ import express from "express";
 import { upload } from "../middleware/multer.middleware.js";
 import {
   createProduct,
+  getAllColors,
   getAllProducts,
   getBrandsAndColor,
   getOwnedProducts,
@@ -31,7 +32,7 @@ productRouter.get(
   authorizeRole("vendor", "admin"),
   getOwnedProducts,
 );
-
+productRouter.get("/colors", authMiddleware, getAllColors);
 ///// Dynamic Routes /////
 productRouter.get(
   "/single-product/:productId/:variantId",
