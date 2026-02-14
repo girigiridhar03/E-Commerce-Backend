@@ -66,6 +66,9 @@ export const getCategoryNamesService = async () => {
       },
     },
     {
+      $unwind: "$variants",
+    },
+    {
       $group: {
         _id: "$category",
         count: {
