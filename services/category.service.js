@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Category from "../models/category.model.js";
 import { AppError } from "../utils/AppError.js";
+import Product from "../models/product.model.js";
 
 export const addCategoryService = async (req) => {
   if (!req.body) {
@@ -54,10 +55,47 @@ export const addCategoryService = async (req) => {
 export const getCategoryNamesService = async () => {
   const categoryNames = await Category.find({}).select("name");
 
+  const ids = categoryNames?.map((item) => item?._id);
+
+  const count = await Product.aggregate([
+    {
+      $match: {
+        isActive: true,
+        isDeleted: false,
+        category: { $in: ids },
+      },
+    },
+    {
+      $group: {
+        _id: "$category",
+        count: {
+          $sum: 1,
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        categoryId: "$_id",
+        count: 1,
+      },
+    },
+  ]);
+  const countMap = count.reduce((acc, item) => {
+    acc[item.categoryId.toString()] = item.count;
+    return acc;
+  }, {});
+
+  const categoryWithCount = categoryNames.map((cat) => ({
+    _id: cat._id,
+    name: cat.name,
+    count: countMap[cat._id.toString()],
+  }));
+
   return {
     status: 200,
     message: "Fetched category names successfully.",
-    names: categoryNames,
+    names: categoryWithCount,
   };
 };
 
